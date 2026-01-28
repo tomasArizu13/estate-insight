@@ -15,7 +15,12 @@ export interface IStorage {
   updateUserRole(id: string, role: string): Promise<User>;
 
   // Stats
-  getStats(): Promise<{ totalProperties: number; activeAdvisors: number; totalValue: number }>;
+  getStats(): Promise<{ 
+    totalPropertiesSold: number; 
+    totalRevenue: number; 
+    salesPerAgent: { agentName: string; salesCount: number; revenue: number }[];
+    averageTicket: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -59,23 +64,22 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async getStats(): Promise<{ totalProperties: number; activeAdvisors: number; totalValue: number }> {
-    const [propStats] = await db
-      .select({
-        count: sql<number>`count(*)`,
-        totalValue: sql<number>`sum(${properties.price})`
-      })
-      .from(properties);
-
-    const [advisorStats] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(users)
-      .where(eq(users.role, 'advisor'));
-
+  async getStats(): Promise<{ 
+    totalPropertiesSold: number; 
+    totalRevenue: number; 
+    salesPerAgent: { agentName: string; salesCount: number; revenue: number }[];
+    averageTicket: number;
+  }> {
+    // For now, returning mock data as requested
     return {
-      totalProperties: Number(propStats?.count || 0),
-      totalValue: Number(propStats?.totalValue || 0),
-      activeAdvisors: Number(advisorStats?.count || 0),
+      totalPropertiesSold: 24,
+      totalRevenue: 15400000,
+      salesPerAgent: [
+        { agentName: "Alex Johnson", salesCount: 8, revenue: 5200000 },
+        { agentName: "Sarah Smith", salesCount: 6, revenue: 3800000 },
+        { agentName: "Mike Brown", salesCount: 10, revenue: 6400000 }
+      ],
+      averageTicket: 641666
     };
   }
 }
