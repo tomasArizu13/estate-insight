@@ -1,7 +1,7 @@
 export * from "./models/auth";
 export * from "./models/chat";
 
-import { pgTable, serial, text, numeric, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, numeric, timestamp, varchar, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -17,6 +17,8 @@ export const properties = pgTable("properties", {
   status: text("status").notNull().default('available'), // 'available', 'sold', 'rented'
   agentId: varchar("agent_id").references(() => users.id),
   imageUrls: text("image_urls").array(),
+  isSold: boolean("is_sold").default(false).notNull(),
+  soldAt: timestamp("sold_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

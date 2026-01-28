@@ -88,9 +88,14 @@ export const api = {
       path: '/api/stats',
       responses: {
         200: z.object({
-          totalProperties: z.number(),
-          activeAdvisors: z.number(),
-          totalValue: z.number(),
+          totalPropertiesSold: z.number(),
+          totalRevenue: z.number(),
+          salesPerAgent: z.array(z.object({
+            agentName: z.string(),
+            salesCount: z.number(),
+            revenue: z.number(),
+          })),
+          averageTicket: z.number(),
         }),
       },
     },
