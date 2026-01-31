@@ -6,19 +6,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
-// This is a UI-only chat interface for the MVP demo, 
-// connecting to the backend route we implemented via replit_integrations/chat
-// Note: The Replit integration uses SSE for streaming responses.
-
 interface Message {
   role: "user" | "assistant";
   content: string;
 }
 
 export default function Chat() {
-  const { user } = useAuth();
+  const { profile } = useAuth();
+  const displayName = profile?.full_name ?? "there";
   const [messages, setMessages] = useState<Message[]>([
-    { role: "assistant", content: `Hello ${user?.firstName || 'there'}! I'm your Propied AI assistant. Ask me about property prices, recent listings, or market trends.` }
+    {
+      role: "assistant",
+      content: `Hello ${displayName}! I'm your Propied AI assistant. Ask me about property prices, recent listings, or market trends.`,
+    },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);

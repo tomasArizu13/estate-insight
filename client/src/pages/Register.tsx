@@ -6,29 +6,42 @@ import { Label } from "@/components/ui/label";
 import { Home, Loader2 } from "lucide-react";
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
-export default function Login() {
+export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (password !== confirmPassword) {
+      setError("Las contraseñas no coinciden");
+      return;
+    }
+    if (password.length < 6) {
+      setError("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
     setLoading(true);
     try {
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+        },
       });
-      if (signInError) {
-        setError(signInError.message);
+      if (signUpError) {
+        setError(signUpError.message);
         setLoading(false);
         return;
       }
-      // La sesión se actualiza vía onAuthStateChange en AuthContext; el Router mostrará la app.
+      setSuccess(true);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Error al iniciar sesión");
+      setError(err instanceof Error ? err.message : "Error al crear la cuenta");
     } finally {
       setLoading(false);
     }
@@ -51,15 +64,41 @@ export default function Login() {
               Faltan variables de entorno
             </h2>
             <p className="text-sm text-muted-foreground">
-              Añade en tu archivo <code className="rounded bg-muted px-1">.env</code> (en la raíz del proyecto):
+              Añade <code className="rounded bg-muted px-1">NEXT_PUBLIC_SUPABASE_URL</code> y{" "}
+              <code className="rounded bg-muted px-1">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> en tu{" "}
+              <code className="rounded bg-muted px-1">.env</code>.
             </p>
-            <ul className="list-inside list-disc text-sm text-muted-foreground space-y-1">
-              <li><code>NEXT_PUBLIC_SUPABASE_URL</code> — URL de tu proyecto Supabase</li>
-              <li><code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> — Anon key de Supabase</li>
-            </ul>
-            <p className="text-xs text-muted-foreground pt-2">
-              Sin estas variables el login no puede conectarse a Supabase Auth.
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (success) {
+    return (
+      <div className="min-h-screen grid lg:grid-cols-2 bg-background">
+        <div className="relative hidden lg:flex flex-col justify-between p-12 bg-primary text-primary-foreground overflow-hidden">
+          <div className="relative z-10">
+            <span className="font-display text-2xl font-bold">Propied</span>
+          </div>
+          <div className="relative z-10 text-sm text-primary-foreground/50">
+            © 2024 Propied Inc. All rights reserved.
+          </div>
+        </div>
+        <div className="flex items-center justify-center p-8">
+          <div className="w-full max-w-md space-y-6 text-center">
+            <h2 className="font-display text-2xl font-bold text-foreground">
+              Revisa tu correo
+            </h2>
+            <p className="text-muted-foreground">
+              Te enviamos un enlace a <strong>{email}</strong> para confirmar tu cuenta.
+              Haz clic en el enlace y luego inicia sesión.
             </p>
+            <Link href="/login">
+              <Button variant="outline" className="w-full">
+                Ir a iniciar sesión
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
@@ -92,7 +131,7 @@ export default function Login() {
             <span className="text-accent">Redefined.</span>
           </h1>
           <p className="text-lg text-primary-foreground/80 max-w-md">
-            The intelligent operating system for modern real estate brokerages.
+            Crea tu cuenta para acceder al dashboard y gestionar propiedades.
           </p>
         </div>
         <div className="relative z-10 text-sm text-primary-foreground/50">
@@ -104,9 +143,11 @@ export default function Login() {
         <div className="w-full max-w-md space-y-8">
           <div className="text-center lg:text-left">
             <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
-              Welcome Back
+              Crear usuario
             </h2>
-            <p className="mt-2 text-muted-foreground">Sign in to access your dashboard</p>
+            <p className="mt-2 text-muted-foreground">
+              Regístrate con tu email para acceder a la plataforma
+            </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -128,10 +169,26 @@ export default function Login() {
               <Input
                 id="password"
                 type="password"
+                placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                autoComplete="current-password"
+                minLength={6}
+                autoComplete="new-password"
+                className="h-12 rounded-xl"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar contraseña</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Repite la contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                minLength={6}
+                autoComplete="new-password"
                 className="h-12 rounded-xl"
               />
             </div>
@@ -147,19 +204,16 @@ export default function Login() {
               {loading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
               ) : (
-                "Iniciar sesión"
+                "Crear cuenta"
               )}
             </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              ¿No tienes cuenta?{" "}
-              <Link href="/register" className="text-primary font-medium hover:underline">
-                Crear usuario
-              </Link>
-            </p>
           </form>
 
-          <p className="text-center text-xs text-muted-foreground">
-            By continuing, you agree to our Terms of Service and Privacy Policy.
+          <p className="text-center text-sm text-muted-foreground">
+            ¿Ya tienes cuenta?{" "}
+            <Link href="/login" className="text-primary font-medium hover:underline">
+              Iniciar sesión
+            </Link>
           </p>
         </div>
       </div>

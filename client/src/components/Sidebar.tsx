@@ -1,12 +1,22 @@
 import { Link, useLocation } from "wouter";
-import { LayoutDashboard, Building2, MessageSquare, Users, LogOut, Home } from "lucide-react";
+import {
+  LayoutDashboard,
+  Building2,
+  MessageSquare,
+  Users,
+  LogOut,
+  Home,
+} from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user, logout } = useAuth();
-  const isAdmin = user?.role === "admin"; // Assuming role exists on user object from schema/auth customization if needed, else we might default to all access for MVP or check logic
+  const { profile, role, signOut } = useAuth();
+  const isAdmin = role === "admin";
+
+  const displayName = profile?.full_name ?? profile?.id ?? "Usuario";
+  const initial = displayName.trim().slice(0, 1).toUpperCase();
 
   const navItems = [
     ...(isAdmin ? [{ href: "/", label: "Dashboard", icon: LayoutDashboard }] : []),
@@ -43,7 +53,9 @@ export default function Sidebar() {
                 <item.icon
                   className={cn(
                     "h-5 w-5 transition-colors",
-                    location === item.href ? "text-primary-foreground" : "text-muted-foreground group-hover:text-foreground"
+                    location === item.href
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground group-hover:text-foreground"
                   )}
                 />
                 {item.label}
@@ -55,23 +67,22 @@ export default function Sidebar() {
         <div className="p-4 border-t border-border/40 bg-muted/30">
           <div className="flex items-center gap-3 mb-4 px-2">
             <div className="h-10 w-10 rounded-full bg-accent/20 flex items-center justify-center text-accent font-bold text-lg border border-accent/20">
-              {user?.firstName?.[0] || "U"}
+              {initial}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-foreground truncate">
-                {user?.firstName} {user?.lastName}
+                {displayName}
               </p>
               <p className="text-xs text-muted-foreground truncate capitalize">
-                {/* Fallback role if not in type yet */}
-                {(user as any)?.role || "Advisor"}
+                {role ?? "—"}
               </p>
             </div>
           </div>
           <button
-            onClick={() => logout()}
+            onClick={() => signOut()}
             className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-5 w-5" />
             Sign Out
           </button>
         </div>

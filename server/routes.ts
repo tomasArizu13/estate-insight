@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
 import { registerChatRoutes } from "./replit_integrations/chat";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
@@ -10,9 +9,6 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Auth & Integrations
-  await setupAuth(app);
-  registerAuthRoutes(app);
   registerChatRoutes(app);
 
   // === Properties ===
